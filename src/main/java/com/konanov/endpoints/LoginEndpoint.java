@@ -3,6 +3,7 @@ package com.konanov.endpoints;
 import com.konanov.model.person.Player;
 import com.konanov.model.person.Role;
 import com.konanov.repository.PlayerRepository;
+import com.konanov.service.SecurityService;
 import com.konanov.service.exceptions.PongManiaException;
 import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
@@ -23,6 +24,7 @@ import static java.util.Collections.singleton;
 public class LoginEndpoint {
 
     private final PlayerRepository playerRepository;
+    private final SecurityService securityService;
 
     @PostMapping(path = "registration")
     public ResponseEntity<Object> registration(@RequestBody Player.Credentials credentials) {
@@ -32,6 +34,7 @@ public class LoginEndpoint {
         }
         credentials.setRoles(singleton(new Role(USER)));
         Player registered = playerRepository.insert(new Player(new ObjectId(), credentials));
+        securityService.autoLogin(credentials.getEmail(), credentials.getPassword());
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
                 .buildAndExpand(registered.getId())
