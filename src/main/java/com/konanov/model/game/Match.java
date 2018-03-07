@@ -1,6 +1,5 @@
 package com.konanov.model.game;
 
-import com.konanov.model.person.Player;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -17,7 +16,7 @@ import java.util.Map;
 public class Match {
     @Id
     private final ObjectId id;
-    private Map<Player, Score> matchResult;
+    private Map<String, Score> matchResult;
 
     @Getter
     @RequiredArgsConstructor

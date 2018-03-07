@@ -31,7 +31,7 @@ public class ScoreCalculatingStep implements Resolver<Game, ScoreCalculatingStep
     private double gameScore(Collection<Match> matches, Player player) {
         return matches.stream()
                       .map(Match::getMatchResult)
-                      .map(result -> result.get(player))
+                      .map(result -> result.get(player.getCredentials().getEmail()))
                       .mapToDouble(score -> score.getPoints() * LOWERING_COEFFICIENT)
                       .sum();
     }

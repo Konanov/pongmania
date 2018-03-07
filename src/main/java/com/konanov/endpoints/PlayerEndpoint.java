@@ -20,7 +20,6 @@ public class PlayerEndpoint {
 
     @PostMapping(path = "player/create")
     public Player createPlayer(@RequestBody Player player) {
-        final Player.Credentials credentials = player.getCredentials();
         //log.info("Request to create new Player: {} {}", credentials.getName(), credentials.getSurname());
         return repository.insert(player);
     }

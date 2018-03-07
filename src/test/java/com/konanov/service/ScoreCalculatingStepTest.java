@@ -103,9 +103,9 @@ public class ScoreCalculatingStepTest {
 
     private Match getMatch(Player host, Player guest, Match.Score eleven, Match.Score six) {
         Match first = new Match(new ObjectId());
-        Map<Player, Match.Score> firstScores = new HashMap<>();
-        firstScores.put(host, eleven);
-        firstScores.put(guest, six);
+        Map<String, Match.Score> firstScores = new HashMap<>();
+        firstScores.put(host.getCredentials().getEmail(), eleven);
+        firstScores.put(guest.getCredentials().getEmail(), six);
         first.setMatchResult(firstScores);
         return first;
     }

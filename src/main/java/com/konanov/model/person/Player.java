@@ -5,6 +5,9 @@ import lombok.*;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.AuthorityUtils;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.Set;
@@ -13,7 +16,7 @@ import java.util.Set;
 @Getter
 @Document(collection = "players")
 @NoArgsConstructor
-public class Player {
+public class Player implements UserDetails {
 
     @Id
     private ObjectId id;
@@ -22,10 +25,42 @@ public class Player {
     private double points;
     private Star star;
     private Collection<Game> games;
+    private Collection<GrantedAuthority> authorities;
 
-    public Player(ObjectId id, Credentials credentials) {
+    public Player(ObjectId id, Credentials credentials, String[] authorities) {
         this.id = id;
         this.credentials = credentials;
+        this.authorities = AuthorityUtils.createAuthorityList(authorities);
+    }
+
+    @Override
+    public String getPassword() {
+        return this.credentials.getPassword();
+    }
+
+    @Override
+    public String getUsername() {
+        return this.credentials.getUserName();
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
     }
 
     @Setter
