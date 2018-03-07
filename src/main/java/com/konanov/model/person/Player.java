@@ -1,5 +1,7 @@
 package com.konanov.model.person;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.konanov.model.game.Game;
 import lombok.*;
 import org.bson.types.ObjectId;
@@ -19,6 +21,7 @@ import java.util.Set;
 public class Player implements UserDetails {
 
     @Id
+    @JsonSerialize(using = ToStringSerializer.class)
     private ObjectId id;
     private Credentials credentials;
     private Status status;
@@ -71,7 +74,6 @@ public class Player implements UserDetails {
         private String email;
         private String userName;
         private String password;
-        private Set<Role> roles;
     }
 
     @Getter

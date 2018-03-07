@@ -1,21 +1,18 @@
 package com.konanov.model.game;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import org.bson.types.ObjectId;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Map;
 
 @Setter
 @Getter
-@RequiredArgsConstructor
+@NoArgsConstructor
 @Document(collection = "matches")
 public class Match {
-    @Id
-    private final ObjectId id;
     private Map<String, Score> matchResult;
 
     @Getter

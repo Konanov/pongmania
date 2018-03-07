@@ -3,7 +3,6 @@ package com.konanov.service;
 import com.konanov.model.game.Game;
 import com.konanov.model.game.Match;
 import com.konanov.model.person.Player;
-import com.konanov.model.person.Role;
 import org.bson.types.ObjectId;
 import org.junit.Before;
 import org.junit.Test;

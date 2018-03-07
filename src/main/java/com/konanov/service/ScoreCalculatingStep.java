@@ -3,6 +3,8 @@ package com.konanov.service;
 import com.konanov.model.game.Game;
 import com.konanov.model.game.Match;
 import com.konanov.model.person.Player;
+import com.konanov.repository.PlayerRepository;
+import com.konanov.service.exceptions.PongManiaException;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,7 +21,10 @@ import static org.hibernate.validator.internal.util.CollectionHelper.asSet;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class ScoreCalculatingStep implements Resolver<Game, ScoreCalculatingStep.FinalScore> {
+
+    private final PlayerRepository playerRepository;
 
     private Subscriber<? super FinalScore> scoreSubscriber;
 
@@ -31,7 +36,7 @@ public class ScoreCalculatingStep implements Resolver<Game, ScoreCalculatingStep
     private double gameScore(Collection<Match> matches, Player player) {
         return matches.stream()
                       .map(Match::getMatchResult)
-                      .map(result -> result.get(player.getCredentials().getEmail()))
+                      .map(result -> result.get(player.getCredentials().getUserName()))
                       .mapToDouble(score -> score.getPoints() * LOWERING_COEFFICIENT)
                       .sum();
     }
@@ -50,13 +55,20 @@ public class ScoreCalculatingStep implements Resolver<Game, ScoreCalculatingStep
     public void onNext(Game game) {
         log.info("Request for calculating game {} scores received", game.getId());
         Collection<Match> matches = game.getMatches();
-        final Player host = game.getHost();
+        final String hostEmail = game.getHostEmail();
+        final Player host = getPlayer(hostEmail, "No host player found for email: %s");
         final double hostScore = host.getPoints() + gameScore(matches, host);
-        final Player guest = game.getGuest();
+        final String guestEmail = game.getGuestEmail();
+        final Player guest = getPlayer(guestEmail, "No guest player found for email: %s");
         final double guestScore = guest.getPoints() + gameScore(matches, guest);
         Player.Star hostStar = calculateStars(hostScore);
         Player.Star guestStar = calculateStars(guestScore);
         this.scoreSubscriber.onNext(new FinalScore(game, hostScore, guestScore, hostStar, guestStar));
+    }
+
+    private Player getPlayer(String hostEmail, String s) {
+        return playerRepository.findByCredentials_Email(hostEmail)
+                .orElseThrow(() -> new PongManiaException(String.format(s, hostEmail)));
     }
 
     @Override
