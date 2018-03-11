@@ -2,11 +2,12 @@ package com.konanov.repository;
 
 import com.konanov.model.person.Player;
 import org.bson.types.ObjectId;
-import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
+import reactor.core.publisher.Mono;
 
 import java.util.Optional;
 
-public interface PlayerRepository extends MongoRepository<Player, ObjectId> {
+public interface PlayerRepository extends ReactiveMongoRepository<Player, ObjectId> {
     Optional<Player> findByCredentials_UserName(String userName);
-    Optional<Player> findByCredentials_Email(String email);
+    Mono<Player> findByCredentials_Email(String email);
 }

@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.Collection;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 @Slf4j
 @RestController
@@ -19,13 +19,12 @@ public class PlayerEndpoint {
     private final PlayerRepository repository;
 
     @PostMapping(path = "player/create")
-    public Player createPlayer(@RequestBody Player player) {
-        //log.info("Request to create new Player: {} {}", credentials.getName(), credentials.getSurname());
+    public Flux<Player> createPlayer(@RequestBody Mono<Player> player) {
         return repository.insert(player);
     }
 
     @GetMapping(path = "player/all")
-    public Collection<Player> retrieveAll() {
+    public Flux<Player> retrieveAll() {
         return repository.findAll();
     }
 }

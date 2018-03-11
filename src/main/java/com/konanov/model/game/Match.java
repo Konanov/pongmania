@@ -1,5 +1,6 @@
 package com.konanov.model.game;
 
+import com.konanov.model.person.Player;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,10 @@ import java.util.Map;
 @NoArgsConstructor
 @Document(collection = "matches")
 public class Match {
+
+    /**
+     * Maps {@link Player} {@literal email} to {@link Player} {@link Score} in current {@link Match}.
+     * */
     private Map<String, Score> matchResult;
 
     @Getter

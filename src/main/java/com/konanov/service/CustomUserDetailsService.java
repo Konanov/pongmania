@@ -22,7 +22,9 @@ public class CustomUserDetailsService implements UserDetailsService {
      * */
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        //TODO Refactor whole thing to Reactive Security.
         return repository.findByCredentials_Email(email)
-        .orElseThrow(() -> new PongManiaException(String.format("No user found for email %s", email)));
+                .doOnError((e) -> new PongManiaException(String.format("No user found for email %s", email)))
+                .block();
     }
 }

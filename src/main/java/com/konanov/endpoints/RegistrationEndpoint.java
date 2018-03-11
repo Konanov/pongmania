@@ -11,26 +11,35 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import reactor.core.publisher.Mono;
 
 import java.net.URI;
-import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
 public class RegistrationEndpoint {
 
+    private static final String USER_EXISTS = "User with email: %s already exists";
+    private static final String CAN_NOT_PERSIST = "Could not save Player to database \nException: %s";
+    private static final String APP_HOST_PORT = "http://localhost:8080";
+
     private final BCryptPasswordEncoder encoder;
     private final PlayerRepository playerRepository;
 
     @PostMapping(path = "registration")
-    public ResponseEntity<Object> registration(@RequestBody Player.Credentials credentials) {
-        Optional<Player> player = playerRepository.findByCredentials_Email(credentials.getEmail());
-        if (player.isPresent()) {
-            throw new PongManiaException(String.format("User with email: %s already exists", credentials.getEmail()));
-        }
+    public Mono<ResponseEntity<Object>> registration(@RequestBody Player.Credentials credentials) {
+        playerRepository.findByCredentials_Email(credentials.getEmail())
+                .doOnSuccess((it) -> {
+                    throw new PongManiaException(String.format(USER_EXISTS, credentials.getEmail()));
+                });
         credentials.setPassword(encoder.encode(credentials.getPassword()));
-        Player registered = playerRepository.insert(new Player(new ObjectId(), credentials, new String[]{"ROLE_USER"}));
-        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+        return playerRepository.insert(new Player(new ObjectId(), credentials, new String[]{"ROLE_USER"}))
+                .map(this::getObjectResponseEntity)
+                .doOnError((e) -> new PongManiaException(String.format(CAN_NOT_PERSIST, e.getMessage())));
+    }
+
+    private ResponseEntity<Object> getObjectResponseEntity(Player registered) {
+        URI location = ServletUriComponentsBuilder.fromUriString(APP_HOST_PORT + "/player/")
                 .path("/{id}")
                 .buildAndExpand(registered.getId())
                 .toUri();
