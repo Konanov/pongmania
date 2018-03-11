@@ -1,8 +1,8 @@
 package com.konanov.endpoints;
 
 import com.konanov.model.person.Player;
-import com.konanov.repository.PlayerRepository;
 import com.konanov.service.exceptions.PongManiaException;
+import com.konanov.service.model.PlayerService;
 import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
 import org.springframework.http.ResponseEntity;
@@ -24,21 +24,29 @@ public class RegistrationEndpoint {
     private static final String APP_HOST_PORT = "http://localhost:8080";
 
     private final BCryptPasswordEncoder encoder;
-    private final PlayerRepository playerRepository;
+    private final PlayerService playerService;
 
     @PostMapping(path = "registration")
-    public Mono<ResponseEntity<Object>> registration(@RequestBody Player.Credentials credentials) {
-        playerRepository.findByCredentials_Email(credentials.getEmail())
-                .doOnSuccess((it) -> {
-                    throw new PongManiaException(String.format(USER_EXISTS, credentials.getEmail()));
-                });
-        credentials.setPassword(encoder.encode(credentials.getPassword()));
-        return playerRepository.insert(new Player(new ObjectId(), credentials, new String[]{"ROLE_USER"}))
+    public Mono<ResponseEntity<String>> registration(@RequestBody Player.Credentials credentials) {
+        final String email = credentials.getEmail();
+        return playerService.findByEmail(email)
+                .flatMap((player) -> Mono.just(ResponseEntity.badRequest().body(String.format(USER_EXISTS, email))))
+                .switchIfEmpty(newPlayerFrom(credentials));
+    }
+
+    private Mono<ResponseEntity<String>> newPlayerFrom(@RequestBody Player.Credentials credentials) {
+        return playerService
+                .insert(new Player(new ObjectId(), encodedCredentials(credentials), new String[]{"ROLE_USER"}))
                 .map(this::getObjectResponseEntity)
                 .doOnError((e) -> new PongManiaException(String.format(CAN_NOT_PERSIST, e.getMessage())));
     }
 
-    private ResponseEntity<Object> getObjectResponseEntity(Player registered) {
+    private Player.Credentials encodedCredentials(Player.Credentials credentials) {
+        credentials.setPassword(encoder.encode(credentials.getPassword()));
+        return credentials;
+    }
+
+    private ResponseEntity<String> getObjectResponseEntity(Player registered) {
         URI location = ServletUriComponentsBuilder.fromUriString(APP_HOST_PORT + "/player/")
                 .path("/{id}")
                 .buildAndExpand(registered.getId())
