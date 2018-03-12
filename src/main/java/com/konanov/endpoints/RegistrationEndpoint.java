@@ -1,12 +1,12 @@
 package com.konanov.endpoints;
 
+import com.konanov.gliko.Rating;
+import com.konanov.gliko.RatingCalculator;
 import com.konanov.model.person.Player;
 import com.konanov.service.exceptions.PongManiaException;
 import com.konanov.service.model.PlayerService;
 import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
-import org.goochjs.glicko2.Rating;
-import org.goochjs.glicko2.RatingCalculator;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
