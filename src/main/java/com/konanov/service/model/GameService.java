@@ -5,6 +5,7 @@ import com.konanov.repository.GameRepository;
 import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Service
@@ -19,5 +20,9 @@ public class GameService {
 
     public Mono<Game> insert(Game game) {
         return gameRepository.insert(game);
+    }
+
+    public Flux<Game> findAllUserGames(ObjectId id) {
+        return gameRepository.findByHostId(id).concatWith(gameRepository.findByGuestId(id));
     }
 }

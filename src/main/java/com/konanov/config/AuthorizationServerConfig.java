@@ -1,7 +1,7 @@
 //package com.konanov.config;
 //
 //import lombok.RequiredArgsConstructor;
-//import org.springframework.context.annotation.Configuration;
+//import org.springframework.context.annotation.MainConfig;
 //import org.springframework.http.HttpMethod;
 //import org.springframework.security.authentication.AuthenticationManager;
 //import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
@@ -10,7 +10,7 @@
 //import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 //import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
 //
-//@Configuration
+//@MainConfig
 //@RequiredArgsConstructor
 //@EnableAuthorizationServer
 //public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdapter {

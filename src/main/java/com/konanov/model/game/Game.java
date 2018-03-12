@@ -1,11 +1,9 @@
 package com.konanov.model.game;
 
-import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
@@ -23,8 +21,10 @@ public class Game {
     @JsonSerialize(using = ToStringSerializer.class)
     private ObjectId id;
     private Collection<Match> matches;
-    private String hostEmail;
-    private String guestEmail;
+    @JsonSerialize(using = ToStringSerializer.class)
+    private ObjectId hostId;
+    @JsonSerialize(using = ToStringSerializer.class)
+    private ObjectId guestId;
     private Type type;
     private Boolean approved;
     private ZonedDateTime planedGameDate;

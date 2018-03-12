@@ -4,6 +4,7 @@ import com.konanov.model.person.Player;
 import com.konanov.repository.PlayerRepository;
 import com.konanov.service.exceptions.PongManiaException;
 import lombok.RequiredArgsConstructor;
+import org.bson.types.ObjectId;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -18,5 +19,9 @@ public class PlayerService {
 
     public Mono<Player> insert(Player player) {
         return playerRepository.insert(player);
+    }
+
+    public Mono<Player> findById(ObjectId id) {
+        return playerRepository.findById(id);
     }
 }

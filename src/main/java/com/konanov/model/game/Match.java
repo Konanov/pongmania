@@ -1,10 +1,14 @@
 package com.konanov.model.game;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.konanov.model.person.Player;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import org.bson.types.ObjectId;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Map;
@@ -15,8 +19,12 @@ import java.util.Map;
 @Document(collection = "matches")
 public class Match {
 
+    @Id
+    @JsonSerialize(using = ToStringSerializer.class)
+    ObjectId id;
+
     /**
-     * Maps {@link Player} {@literal email} to {@link Player} {@link Score} in current {@link Match}.
+     * Maps {@link Player} {@link ObjectId} to {@link Player} {@link Score} in current {@link Match}.
      * */
     private Map<String, Score> matchResult;
 

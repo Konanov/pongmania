@@ -10,4 +10,5 @@ import java.util.Optional;
 public interface PlayerRepository extends ReactiveMongoRepository<Player, ObjectId> {
     Optional<Player> findByCredentials_UserName(String userName);
     Mono<Player> findByCredentials_Email(String email);
+    Mono<Player> findById(ObjectId id);
 }

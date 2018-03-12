@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.konanov.model.game.Game;
 import lombok.*;
 import org.bson.types.ObjectId;
+import org.goochjs.glicko2.Rating;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.security.core.GrantedAuthority;
@@ -25,15 +26,17 @@ public class Player implements UserDetails {
     private ObjectId id;
     private Credentials credentials;
     private Status status;
+    private Rating rating;
     private double points;
     private Star star;
     private Collection<Game> games;
     private Collection<GrantedAuthority> authorities;
 
-    public Player(ObjectId id, Credentials credentials, String[] authorities) {
+    public Player(ObjectId id, Credentials credentials, Rating rating, String[] authorities) {
         this.id = id;
         this.credentials = credentials;
         this.authorities = AuthorityUtils.createAuthorityList(authorities);
+        this.rating = rating;
     }
 
     @Override

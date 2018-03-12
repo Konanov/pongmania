@@ -5,6 +5,8 @@ import com.konanov.service.exceptions.PongManiaException;
 import com.konanov.service.model.PlayerService;
 import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
+import org.goochjs.glicko2.Rating;
+import org.goochjs.glicko2.RatingCalculator;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,6 +25,7 @@ public class RegistrationEndpoint {
     private static final String CAN_NOT_PERSIST = "Could not save Player to database \nException: %s";
     private static final String APP_HOST_PORT = "http://localhost:8080";
 
+    private final RatingCalculator ratingCalculator;
     private final BCryptPasswordEncoder encoder;
     private final PlayerService playerService;
 
@@ -35,12 +38,24 @@ public class RegistrationEndpoint {
     }
 
     private Mono<ResponseEntity<String>> newPlayerFrom(@RequestBody Player.Credentials credentials) {
+        ObjectId id = new ObjectId();
         return playerService
-                .insert(new Player(new ObjectId(), encodedCredentials(credentials), new String[]{"ROLE_USER"}))
+                .insert(newPlayer(credentials, id))
                 .map(this::getObjectResponseEntity)
                 .doOnError((e) -> new PongManiaException(String.format(CAN_NOT_PERSIST, e.getMessage())));
     }
 
+    private Player newPlayer(Player.Credentials credentials, ObjectId id) {
+        return new Player(id, encodedCredentials(credentials), initialRating(id), new String[]{"ROLE_USER"});
+    }
+
+    private Rating initialRating(ObjectId id) {
+        return new Rating(id.toString(), ratingCalculator);
+    }
+
+    /**
+     * Encodes {@link Player} {@literal password} from {@link Player.Credentials} using {@link BCryptPasswordEncoder}.
+     * */
     private Player.Credentials encodedCredentials(Player.Credentials credentials) {
         credentials.setPassword(encoder.encode(credentials.getPassword()));
         return credentials;
