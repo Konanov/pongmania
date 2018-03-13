@@ -52,6 +52,31 @@ public class ScoreCalculatingStep {
     public Mono<FinalScore> calculateGame(Mono<Game> calculatedGame) {
         Game game = calculatedGame.block();
         RatingPeriodResults gameResult = new RatingPeriodResults();
+        //TODO ANOTHER REACTIVE TRY
+        /*Mono<String> hostId = calculatedGame.map(Game::getHostId).map(ObjectId::toString);
+        Mono<String> guestId = calculatedGame.map(Game::getGuestId).map(ObjectId::toString);
+        Mono<Map<String, Rating>> updatedRatings = hostId.concatWith(guestId).flatMap(ratingService::latestRating)
+                .transform(ratingFlux -> ratingFlux
+                        .flatMap(rating -> {
+                            rating.setRatingDeviation(calculateRatingDeviation(rating, MONTHS.between(rating.getTimestamp(), LocalDateTime.now())));
+                            return Mono.just(rating);
+                        })).collectMap(Rating::getUid);
+
+        calculatedGame.flatMapIterable(Game::getMatches)
+                .map(match -> {
+                   updatedRatings.flatMap(pair -> {
+                       Mono<Integer> hostScore = hostId.map(id -> match.getMatchResult().get(id)).map(Match.Score::getPoints);
+                       Mono<Integer> guestScore = guestId.map(id -> match.getMatchResult().get(id)).map(Match.Score::getPoints);
+                       Flux.zip(hostScore, guestScore, (one, two) -> {
+                           if (one > two) {
+                                gameResult.addResult(pair.get(one), pair.get(two));
+                           } else {
+
+                           }
+                           return null;
+                       });
+                   })
+                })*/
         final String hostId = game.getHostId().toString();
         final String guestId = game.getGuestId().toString();
         final Rating hostRating = ratingService.latestRating(hostId).block();
