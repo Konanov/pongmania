@@ -7,6 +7,7 @@
 package com.konanov.gliko;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -47,6 +48,15 @@ public class RatingPeriodResults {
 		Result result = new Result(winner, loser);
 		
 		results.add(result);
+	}
+
+	public RatingPeriodResults addResult(Result result) {
+		results.add(result);
+		return this;
+	}
+
+	public void setResults(List<Result> results) {
+		this.results = results;
 	}
 	
 	

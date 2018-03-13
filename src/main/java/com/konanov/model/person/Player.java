@@ -29,17 +29,15 @@ public class Player implements UserDetails {
     private ObjectId id;
     private Credentials credentials;
     private Status status;
-    private Rating rating;
     private double points;
     private Star star;
     private Collection<Game> games;
     private Collection<GrantedAuthority> authorities;
 
-    public Player(ObjectId id, Credentials credentials, Rating rating, String[] authorities) {
+    public Player(ObjectId id, Credentials credentials, String[] authorities) {
         this.id = id;
         this.credentials = credentials;
         this.authorities = AuthorityUtils.createAuthorityList(authorities);
-        this.rating = rating;
     }
 
     @Override

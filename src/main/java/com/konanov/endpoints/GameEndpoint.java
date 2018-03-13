@@ -1,11 +1,11 @@
 package com.konanov.endpoints;
 
+import com.konanov.gliko.RatingCalculator;
 import com.konanov.model.game.Game;
 import com.konanov.service.ScoreCalculatingStep;
 import com.konanov.service.model.GameService;
 import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
-import org.goochjs.glicko2.RatingCalculator;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -30,9 +30,7 @@ public class GameEndpoint {
 
     @PostMapping("/game/{uuid}/calculate")
     public Mono<ScoreCalculatingStep.FinalScore> calculateGame(@PathVariable String uuid) {
-        //return gameService.findById(new ObjectId(uuid)).transform(scoreCalculatingStep::calculateGame);
-        scoreCalculatingStep.calculateGame(gameService.findById(new ObjectId(uuid)).block());
-        return null;
+        return gameService.findById(new ObjectId(uuid)).transform(scoreCalculatingStep::calculateGame);
     }
 
     @PostMapping("/game/offer")

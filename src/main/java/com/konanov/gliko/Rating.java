@@ -6,6 +6,17 @@
  */
 package com.konanov.gliko;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.bson.types.ObjectId;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+
+import java.time.LocalDateTime;
+
 /**
  * Holds an individual's Glicko-2 rating.
  *
@@ -15,8 +26,15 @@ package com.konanov.gliko;
  *
  * @author Jeremy Gooch
  */
+@Document(collection = "ratings")
+@NoArgsConstructor
+@Getter
+@Setter
 public class Rating {
 
+    @Id
+    @JsonSerialize(using = ToStringSerializer.class)
+    private ObjectId id;
 	private String uid; // not actually used by the calculation engine but useful to track whose rating is whose
 	private double rating;
 	private double ratingDeviation;
@@ -27,14 +45,16 @@ public class Rating {
 	private double workingRating;
 	private double workingRatingDeviation;
 	private double workingVolatility;
+    private LocalDateTime timestamp;
 	
 	/**
 	 * 
 	 * @param uid           An value through which you want to identify the rating (not actually used by the algorithm)
 	 * @param ratingSystem  An instance of the RatingCalculator object
 	 */
-	public Rating(String uid, RatingCalculator ratingSystem) {
+	public Rating(String uid, LocalDateTime timestamp, RatingCalculator ratingSystem) {
 		this.uid = uid;
+        this.timestamp = timestamp;
 		this.rating = ratingSystem.getDefaultRating();
 		this.ratingDeviation = ratingSystem.getDefaultRatingDeviation();
 		this.volatility = ratingSystem.getDefaultVolatility();

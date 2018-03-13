@@ -59,7 +59,7 @@ public class RatingCalculator {
 	 * 
 	 * @param results
 	 */
-	public void updateRatings(RatingPeriodResults results) {
+	public RatingPeriodResults updateRatings(RatingPeriodResults results) {
 		for ( Rating player : results.getParticipants() ) {
 			if ( results.getResults(player).size() > 0 ) {
 				calculateNewRating(player, results.getResults(player));
@@ -79,6 +79,7 @@ public class RatingCalculator {
 		
 		// lastly, clear the result set down in anticipation of the next rating period
 		results.clear();
+		return results;
 	}
 
 	
