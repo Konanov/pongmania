@@ -28,6 +28,8 @@ public class Match {
      * */
     private Map<String, Score> matchResult;
 
+    private boolean hostWon;
+
     @Getter
     @RequiredArgsConstructor
     public enum Score {

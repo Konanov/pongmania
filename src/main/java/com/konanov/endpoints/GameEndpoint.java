@@ -1,8 +1,10 @@
 package com.konanov.endpoints;
 
+import com.konanov.gliko.Rating;
 import com.konanov.gliko.RatingCalculator;
 import com.konanov.model.game.Game;
 import com.konanov.service.ScoreCalculatingStep;
+import com.konanov.service.StatisticsCalculatingStep;
 import com.konanov.service.model.GameService;
 import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
@@ -24,13 +26,16 @@ public class GameEndpoint {
 
     private final GameService gameService;
     private final ScoreCalculatingStep scoreCalculatingStep;
-    private final RatingCalculator ratingCalculator;
+    private final StatisticsCalculatingStep statisticsCalculatingStep;
 
     private static final String APP_HOST_PORT = "http://localhost:8080";
 
     @PostMapping("/game/{uuid}/calculate")
-    public Mono<ScoreCalculatingStep.FinalScore> calculateGame(@PathVariable String uuid) {
-        return gameService.findById(new ObjectId(uuid)).transform(scoreCalculatingStep::calculateGame);
+    public Flux<Rating> calculateGame(@PathVariable String uuid) {
+        final Mono<Game> game = gameService.findById(new ObjectId(uuid));
+        game.map(statisticsCalculatingStep::calculate)
+                .subscribe();
+        return game.flatMapMany(scoreCalculatingStep::calculateGame);
     }
 
     @PostMapping("/game/offer")

@@ -17,7 +17,6 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.time.LocalDateTime;
 import java.util.Map;
 
 import static com.konanov.model.person.Player.Star.FIVE;
@@ -25,6 +24,7 @@ import static com.konanov.model.person.Player.Star.FOUR;
 import static com.konanov.model.person.Player.Star.ONE;
 import static com.konanov.model.person.Player.Star.THREE;
 import static com.konanov.model.person.Player.Star.TWO;
+import static java.time.LocalDateTime.now;
 import static java.time.temporal.ChronoUnit.MONTHS;
 import static java.util.stream.Collectors.toMap;
 import static org.hibernate.validator.internal.util.CollectionHelper.asSet;
@@ -49,42 +49,20 @@ public class ScoreCalculatingStep {
         return starRatings.get(score.intValue());
     }
 
-    public Mono<FinalScore> calculateGame(Mono<Game> calculatedGame) {
-        Game game = calculatedGame.block();
+    /**
+     * Calculates RatingDeviation before resolving match to calibrate players who did not play for a while.
+     * Then calculates Rating for every player resolving game outcome.
+     * */
+    public Flux<Rating> calculateGame(Game game) {
         RatingPeriodResults gameResult = new RatingPeriodResults();
-        //TODO ANOTHER REACTIVE TRY
-        /*Mono<String> hostId = calculatedGame.map(Game::getHostId).map(ObjectId::toString);
-        Mono<String> guestId = calculatedGame.map(Game::getGuestId).map(ObjectId::toString);
-        Mono<Map<String, Rating>> updatedRatings = hostId.concatWith(guestId).flatMap(ratingService::latestRating)
-                .transform(ratingFlux -> ratingFlux
-                        .flatMap(rating -> {
-                            rating.setRatingDeviation(calculateRatingDeviation(rating, MONTHS.between(rating.getTimestamp(), LocalDateTime.now())));
-                            return Mono.just(rating);
-                        })).collectMap(Rating::getUid);
-
-        calculatedGame.flatMapIterable(Game::getMatches)
-                .map(match -> {
-                   updatedRatings.flatMap(pair -> {
-                       Mono<Integer> hostScore = hostId.map(id -> match.getMatchResult().get(id)).map(Match.Score::getPoints);
-                       Mono<Integer> guestScore = guestId.map(id -> match.getMatchResult().get(id)).map(Match.Score::getPoints);
-                       Flux.zip(hostScore, guestScore, (one, two) -> {
-                           if (one > two) {
-                                gameResult.addResult(pair.get(one), pair.get(two));
-                           } else {
-
-                           }
-                           return null;
-                       });
-                   })
-                })*/
         final String hostId = game.getHostId().toString();
         final String guestId = game.getGuestId().toString();
         final Rating hostRating = ratingService.latestRating(hostId).block();
         final Rating guestRating = ratingService.latestRating(guestId).block();
-        long hostMonthsBetween = MONTHS.between(hostRating.getTimestamp(), LocalDateTime.now());
-        long guestMonthsBetween = MONTHS.between(guestRating.getTimestamp(), LocalDateTime.now());
-        hostRating.setRatingDeviation(calculateRatingDeviation(hostRating, hostMonthsBetween));
-        guestRating.setRatingDeviation(calculateRatingDeviation(guestRating, guestMonthsBetween));
+        long hostMonthsAfterLastGame = monthsAfterLastGame(hostRating);
+        long guestMonthsAfterLastGame = monthsAfterLastGame(guestRating);
+        hostRating.setRatingDeviation(calculateRatingDeviation(hostRating, hostMonthsAfterLastGame));
+        guestRating.setRatingDeviation(calculateRatingDeviation(guestRating, guestMonthsAfterLastGame));
         game.getMatches().forEach(match -> {
             int hostScore = match.getMatchResult().get(hostId).getPoints();
             int guestScore = match.getMatchResult().get(guestId).getPoints();
@@ -95,11 +73,20 @@ public class ScoreCalculatingStep {
             }
         });
         ratingCalculator.updateRatings(gameResult);
-        return Flux.zip(ratingService.insert(hostRating), ratingService.insert(guestRating), FinalScore::new).last();
+        hostRating.setId(new ObjectId());
+        hostRating.setTimestamp(now());
+        guestRating.setId(new ObjectId());
+        guestRating.setTimestamp(now());
+        return ratingService.insert(hostRating).concatWith(ratingService.insert(guestRating));
+    }
+
+    private long monthsAfterLastGame(Rating hostRating) {
+        return MONTHS.between(hostRating.getTimestamp(), now());
     }
 
     private double calculateRatingDeviation(Rating player, long hostMonthsBetween) {
-        return Math.min(Math.sqrt(Math.pow(player.getRatingDeviation(), 2) + (Math.pow(63.2, 2) * hostMonthsBetween)), 350);
+        return Math.min(Math.sqrt(Math.pow(player.getRatingDeviation(), 2)
+                + (Math.pow(63.2, 2) * hostMonthsBetween)), 350);
     }
 
     private Mono<Integer> getPlayerScore(Flux<Match> matches, Mono<ObjectId> id) {

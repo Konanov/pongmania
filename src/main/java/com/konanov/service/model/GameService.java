@@ -22,6 +22,10 @@ public class GameService {
         return gameRepository.insert(game);
     }
 
+    public Mono<Game> save(Game game) {
+        return gameRepository.save(game);
+    }
+
     public Flux<Game> findAllUserGames(ObjectId id) {
         return gameRepository.findByHostId(id).concatWith(gameRepository.findByGuestId(id));
     }
