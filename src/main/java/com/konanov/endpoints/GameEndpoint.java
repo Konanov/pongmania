@@ -33,8 +33,7 @@ public class GameEndpoint {
     @PostMapping("/game/{uuid}/calculate")
     public Flux<Rating> calculateGame(@PathVariable String uuid) {
         final Mono<Game> game = gameService.findById(new ObjectId(uuid));
-        game.map(statisticsCalculatingStep::calculate)
-                .subscribe();
+        game.map(statisticsCalculatingStep::calculate);
         return game.flatMapMany(scoreCalculatingStep::calculateGame);
     }
 

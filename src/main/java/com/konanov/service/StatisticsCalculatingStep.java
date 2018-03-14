@@ -38,10 +38,20 @@ public class StatisticsCalculatingStep {
         Mono<IntSummaryStatistics> guestStatistics = matchStatistics(guestId, newGame, guestGames);
         Mono<Long> hostWinsAsHost = winsAsHost(newGame, hostId, hostGames);
         Mono<Long> hostWinsAsGuest = winsAsGuest(newGame, hostId, hostGames);
+        Mono<Long> guestWinsAsHost = winsAsGuest(newGame, guestId, guestGames);
+        Mono<Long> guestWinsAsGuest = winsAsGuest(newGame, guestId, guestGames);
         Mono<Long> allHostGames = newGame.concatWith(hostGames).flatMapIterable(Game::getMatches).count();
         Mono<Double> hostMatchWinRatio = Flux.zip(hostWinsAsHost, hostWinsAsGuest, allHostGames)
-                .map(scope -> (scope.getT1().doubleValue() + scope.getT2().doubleValue()) / scope.getT3().doubleValue()).last();
-        double winRatio = hostMatchWinRatio.block();
+                .map(scope ->(scope.getT1().doubleValue() + scope.getT2().doubleValue()) / scope.getT3().doubleValue()).last();
+        Mono<Double> guestMatchWinRatio = Flux.zip(guestWinsAsHost, guestWinsAsGuest, allHostGames)
+                .map(scope ->(scope.getT1().doubleValue() + scope.getT2().doubleValue()) / scope.getT3().doubleValue()).last();
+        Mono<Statistic> hostStatistic = Flux.zip(hostStatistics, hostMatchWinRatio, (stats, matchWinRation) -> {
+            Statistic statistic = new Statistic();
+            statistic.setMatchWinRatio(matchWinRation);
+            statistic.setAvarageScore(stats.getAverage());
+            statistic.setScoreSum(stats.getSum());
+            return statistic;
+        }).last();
         return null;
     }
 
