@@ -18,6 +18,7 @@ public class Statistic {
     @Id
     @JsonSerialize(using = ToStringSerializer.class)
     private ObjectId id;
+    private ObjectId playerUuid;
     private double matchWinRatio;
     private double gameWinRation;
     private double avarageScore;
