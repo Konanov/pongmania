@@ -4,6 +4,7 @@ import com.konanov.gliko.Rating;
 import com.konanov.model.game.Game;
 import com.konanov.model.game.Match;
 import com.konanov.model.person.Statistic;
+import com.konanov.repository.GameRepository;
 import com.konanov.service.ScoreCalculatingStep;
 import com.konanov.service.StatisticsCalculatingStep;
 import com.konanov.service.model.GameService;
@@ -19,8 +20,10 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.net.URI;
+import java.util.ArrayList;
 
 @Slf4j
 @RestController
@@ -28,6 +31,7 @@ import java.net.URI;
 public class GameEndpoint {
 
     private final GameService gameService;
+    private final GameRepository gameRepository;
     private final ScoreCalculatingStep scoreCalculatingStep;
     private final StatisticsCalculatingStep statisticsCalculatingStep;
 
@@ -49,10 +53,13 @@ public class GameEndpoint {
      * {@literal Host} and {@literal Guest} players of the game.
      * */
     @PostMapping("/game/{uuid}/addMatch")
-    public Mono<Game> addMatch(@PathVariable String uuid, @RequestBody Match match) {
-        Mono<Game> game = gameService.findById(new ObjectId(uuid));
-        game.map(Game::getMatches).doOnNext(matches -> matches.add(match));
-        return game.flatMap(gameService::save);
+    public Mono<ResponseEntity<String>> addMatch(@PathVariable String uuid, @RequestBody Match match) {
+        return gameService.findById(new ObjectId(uuid))
+                .publishOn(Schedulers.elastic())
+                .map(this::initializeMatches)
+                .map(it -> addMatch(match, it))
+                .flatMap(gameService::save)
+                .flatMap(this::getObjectResponseEntity);
     }
 
     /**
@@ -60,10 +67,9 @@ public class GameEndpoint {
      * */
     @PostMapping("/game/{uuid}/calculate")
     public Flux<Rating> calculateGame(@PathVariable String uuid) {
-        final Mono<Game> game = gameService.findById(new ObjectId(uuid));
-        game.map(statisticsCalculatingStep::calculate)
-                .subscribe(stats -> stats.log("New statistics saved for user"));
-        return game.flatMapMany(scoreCalculatingStep::calculateGame);
+        return gameService.findById(new ObjectId(uuid))
+                .doOnNext(statisticsCalculatingStep::calculate)
+                .flatMapMany(scoreCalculatingStep::calculate);
     }
 
     @GetMapping("/game/{uuid}/all")
@@ -77,5 +83,17 @@ public class GameEndpoint {
                 .buildAndExpand(registered.getId())
                 .toUri();
         return Mono.just(ResponseEntity.created(location).build());
+    }
+
+    private Game addMatch(@RequestBody Match match, Game it) {
+        it.getMatches().add(match);
+        return it;
+    }
+
+    private Game initializeMatches(Game it) {
+        if (it.getMatches() == null) {
+            it.setMatches(new ArrayList<>());
+        }
+        return it;
     }
 }
