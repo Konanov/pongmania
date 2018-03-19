@@ -5,7 +5,7 @@ import org.reactivestreams.Processor;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 
-public class ScoreApprovalStep implements Processor<ScoreCalculatingStep.FinalScore, ScoreApprovalStep.Approval> {
+public class ScoreApprovalStep implements Processor<RatingCalculatingStep.FinalScore, ScoreApprovalStep.Approval> {
 
     private Subscriber<? super Approval> subscriber;
 
@@ -20,7 +20,7 @@ public class ScoreApprovalStep implements Processor<ScoreCalculatingStep.FinalSc
     }
 
     @Override
-    public void onNext(ScoreCalculatingStep.FinalScore finalScore) {
+    public void onNext(RatingCalculatingStep.FinalScore finalScore) {
 
     }
 

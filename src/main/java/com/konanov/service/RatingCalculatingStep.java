@@ -18,7 +18,7 @@ import static java.time.temporal.ChronoUnit.MONTHS;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class ScoreCalculatingStep {
+public class RatingCalculatingStep {
 
     private final RatingService ratingService;
     private final RatingCalculator ratingCalculator;

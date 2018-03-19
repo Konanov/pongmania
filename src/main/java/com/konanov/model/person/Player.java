@@ -31,6 +31,7 @@ public class Player implements UserDetails {
     private Status status;
     private double points;
     private Star star;
+    private Rating latestRating;
     private Collection<Game> games;
     private Collection<GrantedAuthority> authorities;
 

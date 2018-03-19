@@ -45,17 +45,17 @@ public class RegistrationEndpoint {
     }
 
     private Mono<ResponseEntity<String>> newPlayerFrom(@RequestBody Player.Credentials credentials) {
-        ObjectId id = new ObjectId();
-        ratingRepository.insert(initialRating(id));
         return playerService
-                .insert(newPlayer(credentials, id))
-                .flatMap(player -> ratingRepository.insert(initialRating(player.getId())))
+                .insert(newPlayer(credentials, new ObjectId()))
+                .flatMap(player -> ratingRepository.insert(player.getLatestRating())
                 .map(this::getObjectResponseEntity)
-                .doOnError((e) -> new PongManiaException(String.format(CAN_NOT_PERSIST, e.getMessage())));
+                .doOnError((e) -> new PongManiaException(String.format(CAN_NOT_PERSIST, e.getMessage()))));
     }
 
     private Player newPlayer(Player.Credentials credentials, ObjectId id) {
-        return new Player(id, encodedCredentials(credentials), new String[]{"ROLE_USER"});
+        Player player =  new Player(id, encodedCredentials(credentials), new String[]{"ROLE_USER"});
+        player.setLatestRating(initialRating(id));
+        return player;
     }
 
     private Rating initialRating(ObjectId id) {

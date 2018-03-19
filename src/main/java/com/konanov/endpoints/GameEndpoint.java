@@ -4,8 +4,7 @@ import com.konanov.gliko.Rating;
 import com.konanov.model.game.Game;
 import com.konanov.model.game.Match;
 import com.konanov.model.person.Statistic;
-import com.konanov.repository.GameRepository;
-import com.konanov.service.ScoreCalculatingStep;
+import com.konanov.service.RatingCalculatingStep;
 import com.konanov.service.StatisticsCalculatingStep;
 import com.konanov.service.model.GameService;
 import lombok.RequiredArgsConstructor;
@@ -31,8 +30,7 @@ import java.util.ArrayList;
 public class GameEndpoint {
 
     private final GameService gameService;
-    private final GameRepository gameRepository;
-    private final ScoreCalculatingStep scoreCalculatingStep;
+    private final RatingCalculatingStep ratingCalculatingStep;
     private final StatisticsCalculatingStep statisticsCalculatingStep;
 
     private static final String APP_HOST_PORT = "http://localhost:8080";
@@ -69,7 +67,7 @@ public class GameEndpoint {
     public Flux<Rating> calculateGame(@PathVariable String uuid) {
         return gameService.findById(new ObjectId(uuid))
                 .doOnNext(statisticsCalculatingStep::calculate)
-                .flatMapMany(scoreCalculatingStep::calculate);
+                .flatMapMany(ratingCalculatingStep::calculate);
     }
 
     @GetMapping("/game/{uuid}/all")
