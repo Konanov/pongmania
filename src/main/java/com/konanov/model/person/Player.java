@@ -48,7 +48,7 @@ public class Player implements UserDetails {
 
     @Override
     public String getUsername() {
-        return this.credentials.getUserName();
+        return String.format("%s %s", this.credentials.getFirstName(), this.credentials.getLastName());
     }
 
     @Override
@@ -77,7 +77,8 @@ public class Player implements UserDetails {
     @AllArgsConstructor
     public static class Credentials {
         private String email;
-        private String userName;
+        private String firstName;
+        private String lastName;
         private String password;
     }
 
