@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.konanov.gliko.Rating;
 import com.konanov.model.game.Game;
+import com.konanov.model.league.League;
+import com.konanov.model.league.PublicLeague;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -32,7 +34,9 @@ public class Player implements UserDetails {
     private double points;
     private Star star;
     private Rating latestRating;
+    private PublicLeague publicLeague;
     private Collection<Game> games;
+    private Collection<League> privateLeagues;
     private Collection<GrantedAuthority> authorities;
 
     public Player(ObjectId id, Credentials credentials, String[] authorities) {
