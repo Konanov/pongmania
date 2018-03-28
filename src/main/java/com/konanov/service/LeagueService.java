@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class LeagueService {
@@ -20,17 +22,23 @@ public class LeagueService {
     public Flux<Player> playersFromLeague(String email) {
         return playerRepository.findByCredentials_Email(email)
                 .flatMapMany(player -> {
-                    PublicLeagueType type = player.getPublicLeague().getType();
-                    return playerRepository.findByPublicLeague_Type(type);
+                    Optional<PublicLeague> league = Optional.ofNullable(player.getPublicLeague());
+                    if (league.isPresent()) {
+                        return playerRepository.findByPublicLeague_Type(league.get().getType());
+                    }
+                    return Flux.empty();
                 });
     }
 
     public Mono<Long> countLeaguePlayers(String email) {
         return playerRepository.findByCredentials_Email(email)
                 .flatMap(player -> {
-                    PublicLeagueType type = player.getPublicLeague().getType();
-                    return playerRepository.countByPublicLeague_Type(type);
-                });
+                    Optional<PublicLeague> league = Optional.ofNullable(player.getPublicLeague());
+                    if (league.isPresent()) {
+                        return playerRepository.countByPublicLeague_Type(league.get().getType());
+                    }
+                    return Mono.empty();
+                }).switchIfEmpty(Mono.just(0L));
     }
 
     public Mono<PublicLeague> findByType(PublicLeagueType type) {
