@@ -41,7 +41,7 @@ public class LeagueService {
                 }).switchIfEmpty(Mono.just(0L));
     }
 
-    public Mono<PublicLeague> findByType(PublicLeagueType type) {
+    public Mono<PublicLeague> findByType(String type) {
         return leagueRepository.findByType(type);
     }
 }

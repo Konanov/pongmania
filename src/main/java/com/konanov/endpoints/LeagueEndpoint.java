@@ -25,7 +25,7 @@ public class LeagueEndpoint {
     private static final String APP_HOST_PORT = "http://localhost:8080";
 
     @PostMapping(path = "league/{type}/assign")
-    public Mono<ResponseEntity<String>> assignPublicLeague(@PathVariable PublicLeagueType type,
+    public Mono<ResponseEntity<String>> assignPublicLeague(@PathVariable String type,
                                                            @RequestBody Player.Credentials credentials) {
         Mono<Player> player = repository.findByCredentials_Email(credentials.getEmail());
         Mono<PublicLeague> league = leagueService.findByType(type);
