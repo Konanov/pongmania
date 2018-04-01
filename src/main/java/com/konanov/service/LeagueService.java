@@ -24,7 +24,7 @@ public class LeagueService {
                 .flatMapMany(player -> {
                     Optional<PublicLeague> league = Optional.ofNullable(player.getPublicLeague());
                     if (league.isPresent()) {
-                        return playerRepository.findByPublicLeague_Type(league.get().getType());
+                        return playerRepository.findByPublicLeague_Type(league.get().getType().name());
                     }
                     return Flux.empty();
                 });
@@ -35,7 +35,7 @@ public class LeagueService {
                 .flatMap(player -> {
                     Optional<PublicLeague> league = Optional.ofNullable(player.getPublicLeague());
                     if (league.isPresent()) {
-                        return playerRepository.countByPublicLeague_Type(league.get().getType());
+                        return playerRepository.countByPublicLeague_Type(league.get().getType().name());
                     }
                     return Mono.empty();
                 }).switchIfEmpty(Mono.just(0L));

@@ -23,11 +23,11 @@ public class PongManiaApplication {
 	@Bean
 	CommandLineRunner preLoadMongo() {
 		return args -> {
-			leagueRepository.insert(new PublicLeague(new ObjectId(), PublicLeagueType.JUNIOR.name()))
+			leagueRepository.insert(new PublicLeague(new ObjectId(), PublicLeagueType.JUNIOR))
 					.doOnNext(league -> System.out.println(league.getType() + " league created")).block();
-			leagueRepository.insert(new PublicLeague(new ObjectId(), PublicLeagueType.MIDDLE.name()))
+			leagueRepository.insert(new PublicLeague(new ObjectId(), PublicLeagueType.MIDDLE))
 					.doOnNext(league -> System.out.println(league.getType() + " league created")).block();
-			leagueRepository.insert(new PublicLeague(new ObjectId(), PublicLeagueType.PRO.name()))
+			leagueRepository.insert(new PublicLeague(new ObjectId(), PublicLeagueType.PRO))
 					.doOnNext(league -> System.out.println(league.getType() + " league created")).block();
 		};
 	}

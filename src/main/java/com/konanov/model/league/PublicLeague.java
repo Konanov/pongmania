@@ -20,5 +20,5 @@ public class PublicLeague {
     @Id
     @JsonSerialize(using = ToStringSerializer.class)
     private ObjectId id;
-    private String type;
+    private PublicLeagueType type;
 }

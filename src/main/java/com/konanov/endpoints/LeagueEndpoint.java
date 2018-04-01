@@ -5,6 +5,7 @@ import com.konanov.model.league.PublicLeagueType;
 import com.konanov.model.person.Player;
 import com.konanov.repository.PlayerRepository;
 import com.konanov.service.LeagueService;
+import com.konanov.service.exceptions.PongManiaException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +14,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import javax.xml.ws.Response;
 import java.net.URI;
 
 @Slf4j
@@ -22,18 +24,20 @@ public class LeagueEndpoint {
 
     private final PlayerRepository repository;
     private final LeagueService leagueService;
+    private static final String LEAGUE_NOT_ASSIGNED = "League was not assigned to player: %s";
     private static final String APP_HOST_PORT = "http://localhost:8080";
 
     @PostMapping(path = "league/{type}/assign")
-    public Mono<ResponseEntity<String>> assignPublicLeague(@PathVariable String type,
+    public Mono<PublicLeague> assignPublicLeague(@PathVariable String type,
                                                            @RequestBody Player.Credentials credentials) {
         Mono<Player> player = repository.findByCredentials_Email(credentials.getEmail());
         Mono<PublicLeague> league = leagueService.findByType(type);
         return Mono.zip(player, league, (p, l) -> {
             p.setPublicLeague(l);
-            repository.save(p);
-            return l;
-        }).map(this::getObjectResponseEntity);
+            return p;
+        }).flatMap(repository::save)
+                .map(Player::getPublicLeague)
+                .doOnError((e) -> new PongManiaException(String.format(LEAGUE_NOT_ASSIGNED, e.getMessage())));
     }
 
     @GetMapping(path = "allPlayers/league/{email}")
