@@ -10,7 +10,7 @@ import reactor.core.publisher.Mono;
 public interface PlayerRepository extends ReactiveMongoRepository<Player, ObjectId> {
     Mono<Player> findByCredentials_Email(String email);
     Mono<Player> findById(ObjectId id);
-    Flux<Player> findByPublicLeague_TypeOrderByLatestRating_Rating(PublicLeagueType type);
+    Flux<Player> findByPublicLeague_TypeOrderByLatestRating_RatingDesc(PublicLeagueType type);
     Flux<Player> findByPublicLeague_Type(PublicLeagueType type);
     Mono<Long> countByPublicLeague_Type(PublicLeagueType type);
 }

@@ -26,7 +26,7 @@ public class PlayerService {
     }
 
     public Flux<Player> getPlayersOfLeague(PublicLeagueType type) {
-        return repository.findByPublicLeague_TypeOrderByLatestRating_Rating(type);
+        return repository.findByPublicLeague_TypeOrderByLatestRating_RatingDesc(type);
     }
 
     public Mono<Player> findById(ObjectId id) {
