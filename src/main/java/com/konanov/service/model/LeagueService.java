@@ -1,4 +1,4 @@
-package com.konanov.service;
+package com.konanov.service.model;
 
 import com.konanov.model.league.PublicLeague;
 import com.konanov.model.league.PublicLeagueType;
@@ -24,7 +24,7 @@ public class LeagueService {
                 .flatMapMany(player -> {
                     Optional<PublicLeague> league = Optional.ofNullable(player.getPublicLeague());
                     if (league.isPresent()) {
-                        return playerRepository.findByPublicLeague_Type(league.get().getType().name());
+                        return playerRepository.findByPublicLeague_Type(league.get().getType());
                     }
                     return Flux.empty();
                 });
@@ -35,13 +35,13 @@ public class LeagueService {
                 .flatMap(player -> {
                     Optional<PublicLeague> league = Optional.ofNullable(player.getPublicLeague());
                     if (league.isPresent()) {
-                        return playerRepository.countByPublicLeague_Type(league.get().getType().name());
+                        return playerRepository.countByPublicLeague_Type(league.get().getType());
                     }
                     return Mono.empty();
                 }).switchIfEmpty(Mono.just(0L));
     }
 
-    public Mono<PublicLeague> findByType(String type) {
+    public Mono<PublicLeague> findByType(PublicLeagueType type) {
         return leagueRepository.findByType(type);
     }
 }

@@ -1,4 +1,4 @@
-package com.konanov.service;
+package com.konanov.service.logical;
 
 import com.konanov.gliko.Rating;
 import com.konanov.gliko.RatingCalculator;

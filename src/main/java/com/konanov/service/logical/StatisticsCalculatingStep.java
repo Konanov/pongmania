@@ -1,4 +1,4 @@
-package com.konanov.service;
+package com.konanov.service.logical;
 
 import com.konanov.model.game.Game;
 import com.konanov.model.game.Match;

@@ -1,4 +1,4 @@
-package com.konanov.service;
+package com.konanov.service.security;
 
 import com.konanov.model.person.Player;
 import com.konanov.repository.PlayerRepository;

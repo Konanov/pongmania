@@ -1,4 +1,4 @@
-package com.konanov.service;
+package com.konanov.service.logical;
 
 import com.konanov.model.person.Player;
 import org.reactivestreams.Processor;

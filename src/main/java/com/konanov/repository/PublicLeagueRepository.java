@@ -7,5 +7,5 @@ import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
 import reactor.core.publisher.Mono;
 
 public interface PublicLeagueRepository extends ReactiveMongoRepository<PublicLeague, ObjectId> {
-    Mono<PublicLeague> findByType(String type);
+    Mono<PublicLeague> findByType(PublicLeagueType type);
 }

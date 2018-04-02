@@ -4,8 +4,9 @@ import com.konanov.model.league.PublicLeague;
 import com.konanov.model.league.PublicLeagueType;
 import com.konanov.model.person.Player;
 import com.konanov.repository.PlayerRepository;
-import com.konanov.service.LeagueService;
+import com.konanov.service.model.LeagueService;
 import com.konanov.service.exceptions.PongManiaException;
+import com.konanov.service.model.PlayerService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -14,40 +15,35 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import javax.xml.ws.Response;
 import java.net.URI;
+import java.util.Optional;
 
 @Slf4j
 @RestController
 @RequiredArgsConstructor
 public class LeagueEndpoint {
 
-    private final PlayerRepository repository;
+    private final PlayerService playerService;
     private final LeagueService leagueService;
     private static final String LEAGUE_NOT_ASSIGNED = "League was not assigned to player: %s";
     private static final String APP_HOST_PORT = "http://localhost:8080";
 
     @PostMapping(path = "league/{type}/assign")
     public Mono<PublicLeague> assignPublicLeague(@PathVariable String type,
-                                                           @RequestBody Player.Credentials credentials) {
-        Mono<Player> player = repository.findByCredentials_Email(credentials.getEmail());
-        Mono<PublicLeague> league = leagueService.findByType(type);
-        return Mono.zip(player, league, (p, l) -> {
-            p.setPublicLeague(l);
-            return p;
-        }).flatMap(repository::save)
-                .map(Player::getPublicLeague)
-                .doOnError((e) -> new PongManiaException(String.format(LEAGUE_NOT_ASSIGNED, e.getMessage())));
-    }
-
-    @GetMapping(path = "allPlayers/league/{email}")
-    public Flux<Player> getLeaguePlayers(@PathVariable String email) {
-        return leagueService.playersFromLeague(email);
-    }
-
-    @GetMapping(path = "league/players/count/{email}")
-    public Mono<Long> countLeaguePlayers(@PathVariable String email) {
-        return leagueService.countLeaguePlayers(email);
+                                                 @RequestBody Player.Credentials credentials) {
+        Optional<PublicLeagueType> value = PublicLeagueType.leagueByName(type);
+        if (value.isPresent()) {
+            Mono<Player> player = playerService.findByEmail(credentials.getEmail());
+            Mono<PublicLeague> league = leagueService.findByType(value.get());
+            return Mono.zip(player, league, (p, l) -> {
+                p.setPublicLeague(l);
+                return p;
+            }).flatMap(playerService::insert)
+                    .map(Player::getPublicLeague)
+                    .doOnError((e) -> new PongManiaException(String.format(LEAGUE_NOT_ASSIGNED, e.getMessage())));
+        } else {
+            return Mono.empty();
+        }
     }
 
     private ResponseEntity<String> getObjectResponseEntity(PublicLeague league) {
