@@ -1,6 +1,6 @@
 package com.konanov.config;
 
-import com.konanov.gliko.RatingCalculator;
+import com.konanov.rating.service.RatingCalculator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

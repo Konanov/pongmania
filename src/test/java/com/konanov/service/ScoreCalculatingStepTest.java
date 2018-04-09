@@ -1,8 +1,8 @@
 //package com.konanov.service;
 //
-//import com.konanov.model.game.Game;
-//import com.konanov.model.game.Match;
-//import com.konanov.model.person.Player;
+//import com.konanov.game.model.Game;
+//import com.konanov.game.model.Match;
+//import com.konanov.player.model.Player;
 //import org.bson.types.ObjectId;
 //import org.junit.Before;
 //import org.junit.Test;
@@ -14,7 +14,7 @@
 //
 //import java.util.*;
 //
-//import static com.konanov.model.game.Match.Score.*;
+//import static com.konanov.game.model.Match.Score.*;
 //import static com.konanov.model.person.Role.Name.ADMIN;
 //import static com.konanov.model.person.Role.Name.USER;
 //import static java.util.Arrays.asList;

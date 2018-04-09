@@ -1,9 +1,6 @@
 package com.konanov;
 
-import com.konanov.model.league.PublicLeague;
-import com.konanov.model.league.PublicLeagueType;
-import com.konanov.repository.PublicLeagueRepository;
-import org.bson.types.ObjectId;
+import com.konanov.league.repository.PublicLeagueRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;

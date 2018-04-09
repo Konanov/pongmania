@@ -1,6 +1,6 @@
 package com.konanov.config;
 
-import com.konanov.service.security.CustomUserDetailsService;
+import com.konanov.player.service.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
