@@ -36,6 +36,11 @@ public class PlayerEndpoint {
         return service.playersPublicLeague(email);
     }
 
+    @GetMapping(path = "players/{email}")
+    public Mono<Player> getPlayer(@PathVariable String email) {
+        return service.findByEmail(email);
+    }
+
     @GetMapping(path = "players/of/{type}/league")
     public Flux<Player> playersOfLeague(@PathVariable String type) {
         Optional<PublicLeagueType> value = PublicLeagueType.leagueByName(type);
