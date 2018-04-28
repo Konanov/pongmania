@@ -19,6 +19,7 @@ public class GameService {
     }
 
     public Mono<Game> insert(Game game) {
+
         return gameRepository.insert(game);
     }
 

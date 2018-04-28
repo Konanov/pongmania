@@ -1,5 +1,6 @@
 package com.konanov.game.endpoint;
 
+import com.konanov.player.service.PlayerService;
 import com.konanov.rating.model.Rating;
 import com.konanov.game.model.Game;
 import com.konanov.game.model.Match;
@@ -30,10 +31,9 @@ import java.util.ArrayList;
 public class GameEndpoint {
 
     private final GameService gameService;
+    private final PlayerService playerService;
     private final RatingCalculationService ratingCalculationService;
     private final StatisticsCalculatingService statisticsCalculatingService;
-
-    private static final String APP_HOST_PORT = "http://localhost:8080";
 
     /**
      * Offer new {@link Game} to player.
@@ -42,8 +42,16 @@ public class GameEndpoint {
      * that was held in past.
      * */
     @PostMapping("/game/offer")
-    public Mono<ResponseEntity<String>> offerGame(@RequestBody Game game) {
-        return gameService.insert(game).flatMap(this::getObjectResponseEntity);
+    public Mono<Game> offerGame(@RequestBody Game game) {
+        playerService.findByEmail(game.getHostEmail())
+                .cache()
+                .repeat()
+                .subscribe(it -> game.setHostId(it.getId()));
+        playerService.findByEmail(game.getGuestEmail())
+                .cache()
+                .repeat()
+                .subscribe(it -> game.setGuestId(it.getId()));
+        return gameService.insert(game);
     }
 
     /**
@@ -51,13 +59,12 @@ public class GameEndpoint {
      * {@literal Host} and {@literal Guest} players of the game.
      * */
     @PostMapping("/game/{uuid}/addMatch")
-    public Mono<ResponseEntity<String>> addMatch(@PathVariable String uuid, @RequestBody Match match) {
+    public Mono<Game> addMatch(@PathVariable String uuid, @RequestBody Match match) {
         return gameService.findById(new ObjectId(uuid))
                 .publishOn(Schedulers.elastic())
                 .map(this::initializeMatches)
                 .map(it -> addMatch(match, it))
-                .flatMap(gameService::save)
-                .flatMap(this::getObjectResponseEntity);
+                .flatMap(gameService::save);
     }
 
     /**
@@ -73,14 +80,6 @@ public class GameEndpoint {
     @GetMapping("/game/{uuid}/all")
     public Flux<Game> getUserGames(@PathVariable String uuid) {
         return gameService.findAllUserGames(new ObjectId(uuid));
-    }
-
-    private Mono<ResponseEntity<String>> getObjectResponseEntity(Game registered) {
-        URI location = ServletUriComponentsBuilder.fromUriString(APP_HOST_PORT + "/game/")
-                .path("/{id}")
-                .buildAndExpand(registered.getId())
-                .toUri();
-        return Mono.just(ResponseEntity.created(location).build());
     }
 
     private Game addMatch(@RequestBody Match match, Game it) {

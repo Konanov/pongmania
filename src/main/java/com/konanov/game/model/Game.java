@@ -25,6 +25,8 @@ public class Game {
     private ObjectId hostId;
     @JsonSerialize(using = ToStringSerializer.class)
     private ObjectId guestId;
+    private String hostEmail;
+    private String guestEmail;
     private Type type;
     private Boolean approved;
     private ZonedDateTime planedGameDate;
