@@ -28,18 +28,15 @@ public class LeagueEndpoint {
     @PostMapping(path = "league/{type}/assign")
     public Mono<PublicLeague> assignPublicLeague(@PathVariable String type,
                                                  @RequestBody Player.Credentials credentials) {
-        Optional<PublicLeagueType> value = PublicLeagueType.leagueByName(type);
-        if (value.isPresent()) {
+        return PublicLeagueType.leagueByName(type).flatMap(name -> {
             Mono<Player> player = playerService.findByEmail(credentials.getEmail());
-            Mono<PublicLeague> league = leagueService.findByType(value.get());
+            Mono<PublicLeague> league = leagueService.findByType(name);
             return Mono.zip(player, league, (p, l) -> {
                 p.setPublicLeague(l);
                 return p;
             }).flatMap(playerService::insert)
                     .map(Player::getPublicLeague)
                     .doOnError((e) -> new PongManiaException(String.format(LEAGUE_NOT_ASSIGNED, e.getMessage())));
-        } else {
-            return Mono.empty();
-        }
+        }).switchIfEmpty(Mono.empty());
     }
 }

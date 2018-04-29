@@ -11,6 +11,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.Accessors;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -23,6 +24,7 @@ import java.util.Collection;
 @Setter
 @Getter
 @Document(collection = "players")
+@Accessors(chain = true)
 @NoArgsConstructor
 public class Player implements UserDetails {
 
@@ -36,6 +38,7 @@ public class Player implements UserDetails {
     private Rating latestRating;
     private PublicLeague publicLeague;
     private Collection<Game> games;
+    private Long plannedGamesCount;
     private Collection<League> privateLeagues;
     private Collection<GrantedAuthority> authorities;
 

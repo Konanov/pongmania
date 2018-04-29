@@ -1,6 +1,5 @@
 package com.konanov.player.endpoint;
 
-import com.konanov.game.model.Game;
 import com.konanov.game.service.GameService;
 import com.konanov.league.model.PublicLeague;
 import com.konanov.league.model.PublicLeagueType;
@@ -16,7 +15,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
@@ -47,29 +46,19 @@ public class PlayerEndpoint {
         return playerService.findByEmail(email);
     }
 
-    @GetMapping(path = "players/of/{type}/league")
-    public Flux<Player> playersOfLeague(@PathVariable String type) {
-        Optional<PublicLeagueType> value = PublicLeagueType.leagueByName(type);
-        if (value.isPresent()) {
-            Flux<Player> players = playerService.getPlayersOfLeague(value.get());
-            Flux<ObjectId> ids = players.map(Player::getId);
-            Flux<Game> playerGames = ids.flatMap(gameService::findAllUserGames);
-            return Flux.zip(players, playerGames).map(
-                pair -> {
-                    Player player = pair.getT1();
-                    Game game = pair.getT2();
-                    checkGamesNotNull(player);
-                    if (player.getId() == game.getHostId() || player.getId() == game.getGuestId()) {
-                        player.getGames().add(game);
-                        return player;
-                    }
-                    checkGamesNotNull(player);
-                    return player;
-                }
-            );
-        } else {
-            return Flux.empty();
-        }
+    @GetMapping(path = "players/of/{name}/league")
+    public Flux<Player> playersOfLeague(@PathVariable String name) {
+        return PublicLeagueType
+                .leagueByName(name)
+                .flatMapMany(playerService::getPlayersOfLeague)
+                .flatMap(this::setPlayerGames);
+
+    }
+
+    private Mono<Player> setPlayerGames(Player player) {
+        return gameService.countPlayerPlannedGames(player.getId())
+                          .map(counts -> counts.get(player.getId()))
+                          .map(player::setPlannedGamesCount);
     }
 
     private void checkGamesNotNull(Player player) {
