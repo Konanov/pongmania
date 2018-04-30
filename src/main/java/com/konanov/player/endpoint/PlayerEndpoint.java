@@ -56,7 +56,7 @@ public class PlayerEndpoint {
     }
 
     private Mono<Player> setPlayerGames(Player player) {
-        return gameService.countPlayerPlannedGames(player.getId())
+        return gameService.countPlayerPlayedGames(player.getId())
                           .map(counts -> counts.get(player.getId()))
                           .map(player::setPlannedGamesCount);
     }

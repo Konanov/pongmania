@@ -38,6 +38,7 @@ public class Player implements UserDetails {
     private Rating latestRating;
     private PublicLeague publicLeague;
     private Collection<Game> games;
+    private Long playedGamesCount;
     private Long plannedGamesCount;
     private Collection<League> privateLeagues;
     private Collection<GrantedAuthority> authorities;
