@@ -1,59 +1,98 @@
 package com.konanov.game.service;
 
 import com.konanov.game.model.Game;
+import com.konanov.game.model.Match;
 import com.konanov.game.repository.GameRepository;
+import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.time.ZonedDateTime;
-import java.util.HashMap;
-import java.util.Map;
-
-import static java.time.ZonedDateTime.now;
-
 @Service
 @RequiredArgsConstructor
 public class GameService {
 
-    private final GameRepository gameRepository;
+  private final GameRepository gameRepository;
 
-    public Mono<Game> findById(ObjectId uuid) {
-        return gameRepository.findById(uuid);
-    }
+  public Mono<Map<ObjectId, Long>> countPlanedGames(ObjectId id) {
+    Map<ObjectId, Long> gamesCount = new HashMap<>();
+    return gameRepository
+        .countByHostIdAndApproved(id, false)
+        .concatWith(gameRepository
+            .countByGuestIdAndApproved(id, false))
+        .reduce((asHost, asGuest) -> asHost + asGuest).map(count -> {
+          gamesCount.put(id, count);
+          return gamesCount;
+        });
+  }
 
-    public Mono<Game> insert(Game game) {
-        return gameRepository.insert(game);
-    }
+  public Mono<Map<ObjectId, Long>> countPlayedGames(ObjectId id) {
+    Map<ObjectId, Long> gamesCount = new HashMap<>();
+    return gameRepository.countByHostIdAndApproved(id, true)
+        .concatWith(
+            gameRepository.countByGuestIdAndApproved(id, true))
+        .reduce((asHost, asGuest) -> asHost + asGuest).map(count -> {
+          gamesCount.put(id, count);
+          return gamesCount;
+        }).switchIfEmpty(Mono.just(gamesCount));
+  }
 
-    public Mono<Map<ObjectId, Long>> countPlayerPlannedGames(ObjectId id) {
-        Map<ObjectId, Long> gamesCount = new HashMap<>();
-        return gameRepository.countByHostId(id)
-                .concatWith(gameRepository.countByGuestId(id))
-                .reduce((asHost, asGuest) -> asHost + asGuest).map(count -> {
-                    gamesCount.put(id, count);
-                    return gamesCount;
-                });
-    }
+  public Flux<Map<ObjectId, BigDecimal>> matchWinRatio(ObjectId id) {
+    final AtomicInteger matchCount = new AtomicInteger();
+    final AtomicInteger wonMatches = new AtomicInteger();
+    Map<ObjectId, BigDecimal> matchWinRation = new HashMap<>();
+    return gameRepository.findByHostId(id).concatWith(gameRepository.findByGuestId(id))
+        .flatMap(game -> {
+          final Collection<Match> matches = game.getMatches();
+          if (matches != null && !matches.isEmpty()) {
+            countWinsAsHost(id, matchCount, wonMatches, game, matches);
+            countWinsAsGuest(id, matchCount, wonMatches, game, matches);
+          }
+          BigDecimal winRatio = getWinRatio(matchCount, wonMatches);
+          matchWinRation.put(id, winRatio);
+          return Mono.just(matchWinRation);
+        }).switchIfEmpty(Mono.empty());
+  }
 
-    public Mono<Map<ObjectId, Long>> countPlayerPlayedGames(ObjectId id) {
-        ZonedDateTime now = now();
-        Map<ObjectId, Long> gamesCount = new HashMap<>();
-        return gameRepository.countByHostIdAndApprovedAndPlanedGameDateLessThan(id, now)
-                .concatWith(gameRepository.countByGuestIdAndApprovedAndPlanedGameDateLessThan(id, now))
-                .reduce((asHost, asGuest) -> asHost + asGuest).map(count -> {
-                    gamesCount.put(id, count);
-                    return gamesCount;
-                });
+  private BigDecimal getWinRatio(AtomicInteger matchCount, AtomicInteger wonMatches) {
+    if (wonMatches.intValue() != 0) {
+      return BigDecimal.valueOf(wonMatches.get())
+          .divide(BigDecimal.valueOf(matchCount.get()), 2, BigDecimal.ROUND_HALF_DOWN);
     }
+    return new BigDecimal(0);
+  }
 
-    public Mono<Game> save(Game game) {
-        return gameRepository.save(game);
+  private void countWinsAsGuest(ObjectId id, AtomicInteger matchCount, AtomicInteger wonMatches,
+      Game game, Collection<Match> matches) {
+    if (game.getGuestId().equals(id)) {
+      matches.forEach(match -> {
+        matchCount.incrementAndGet();
+        if (!match.isHostWon()) {
+          wonMatches.incrementAndGet();
+        }
+      });
     }
+  }
 
-    public Flux<Game> findAllUserGames(ObjectId id) {
-        return gameRepository.findByHostId(id).concatWith(gameRepository.findByGuestId(id));
+  private void countWinsAsHost(ObjectId id, AtomicInteger matchCount, AtomicInteger wonMatches,
+      Game game, Collection<Match> matches) {
+    if (game.getHostId().equals(id)) {
+      matches.forEach(match -> {
+        matchCount.incrementAndGet();
+        if (match.isHostWon()) {
+          wonMatches.incrementAndGet();
+        }
+      });
     }
+  }
+
+  public Flux<Game> findAllPlayerGames(ObjectId id) {
+    return gameRepository.findByHostId(id).concatWith(gameRepository.findByGuestId(id));
+  }
 }

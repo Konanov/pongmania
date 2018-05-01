@@ -6,6 +6,7 @@ import com.konanov.rating.model.Rating;
 import com.konanov.game.model.Game;
 import com.konanov.league.model.League;
 import com.konanov.league.model.PublicLeague;
+import java.math.BigDecimal;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -38,6 +39,7 @@ public class Player implements UserDetails {
     private Rating latestRating;
     private PublicLeague publicLeague;
     private Collection<Game> games;
+    private BigDecimal matchWinRatio;
     private Long playedGamesCount;
     private Long plannedGamesCount;
     private Collection<League> privateLeagues;

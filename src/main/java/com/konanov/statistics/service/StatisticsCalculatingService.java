@@ -32,8 +32,8 @@ public class StatisticsCalculatingService {
     public void calculate(Game game) {
         ObjectId hostId = game.getHostId();
         ObjectId guestId = game.getGuestId();
-        Flux<Game> hostGames = gameService.findAllUserGames(hostId);
-        Flux<Game> guestGames = gameService.findAllUserGames(guestId);
+        Flux<Game> hostGames = gameService.findAllPlayerGames(hostId);
+        Flux<Game> guestGames = gameService.findAllPlayerGames(guestId);
         Mono<DoubleSummaryStatistics> hostStatistics = matchStatistics(hostId, hostGames);
         Mono<DoubleSummaryStatistics> guestStatistics = matchStatistics(guestId, guestGames);
         Mono<Double> hostMatchWinRatio = matchWinRatio(hostId, hostGames);
