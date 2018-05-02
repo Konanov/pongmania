@@ -2,11 +2,12 @@ package com.konanov.player.model;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
-import com.konanov.rating.model.Rating;
 import com.konanov.game.model.Game;
 import com.konanov.league.model.League;
 import com.konanov.league.model.PublicLeague;
+import com.konanov.rating.model.Rating;
 import java.math.BigDecimal;
+import java.util.Collection;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,13 +21,11 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.Collection;
-
 @Setter
 @Getter
-@Document(collection = "players")
-@Accessors(chain = true)
 @NoArgsConstructor
+@Accessors(chain = true)
+@Document(collection = "players")
 public class Player implements UserDetails {
 
     @Id
@@ -105,3 +104,4 @@ public class Player implements UserDetails {
         private final int number;
     }
 }
+

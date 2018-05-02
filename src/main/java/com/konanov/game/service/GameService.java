@@ -20,6 +20,10 @@ public class GameService {
 
   private final GameRepository gameRepository;
 
+  /**
+   * Counts not approved games player has planned.
+   * @return number games planned by player and maps it to his {@link ObjectId}
+   */
   public Mono<Map<ObjectId, Long>> countPlanedGames(ObjectId id) {
     Map<ObjectId, Long> gamesCount = new HashMap<>();
     return gameRepository
@@ -32,6 +36,10 @@ public class GameService {
         });
   }
 
+  /**
+   * Counts approved games player has played.
+   * @return number games played by player and maps it to his {@link ObjectId}
+   */
   public Mono<Map<ObjectId, Long>> countPlayedGames(ObjectId id) {
     Map<ObjectId, Long> gamesCount = new HashMap<>();
     return gameRepository.countByHostIdAndApproved(id, true)
@@ -63,7 +71,8 @@ public class GameService {
   private BigDecimal getWinRatio(AtomicInteger matchCount, AtomicInteger wonMatches) {
     if (wonMatches.intValue() != 0) {
       return BigDecimal.valueOf(wonMatches.get())
-          .divide(BigDecimal.valueOf(matchCount.get()), 2, BigDecimal.ROUND_HALF_DOWN);
+          .divide(BigDecimal.valueOf(matchCount.get()), 2, BigDecimal.ROUND_HALF_DOWN)
+          .multiply(new BigDecimal(100));
     }
     return new BigDecimal(0);
   }
