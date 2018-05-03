@@ -22,6 +22,7 @@ public class GameService {
 
   /**
    * Counts not approved games player has planned.
+   *
    * @return number games planned by player and maps it to his {@link ObjectId}
    */
   public Mono<Map<ObjectId, Long>> countPlanedGames(ObjectId id) {
@@ -38,6 +39,7 @@ public class GameService {
 
   /**
    * Counts approved games player has played.
+   *
    * @return number games played by player and maps it to his {@link ObjectId}
    */
   public Mono<Map<ObjectId, Long>> countPlayedGames(ObjectId id) {
@@ -65,7 +67,13 @@ public class GameService {
           BigDecimal winRatio = getWinRatio(matchCount, wonMatches);
           matchWinRation.put(id, winRatio);
           return Mono.just(matchWinRation);
-        }).switchIfEmpty(Mono.empty());
+        }).switchIfEmpty(noMatchResult(matchWinRation, id));
+  }
+
+  private Flux<Map<ObjectId, BigDecimal>> noMatchResult(Map<ObjectId, BigDecimal> map,
+      ObjectId playerId) {
+    map.put(playerId, new BigDecimal(0));
+    return Flux.just(map);
   }
 
   private BigDecimal getWinRatio(AtomicInteger matchCount, AtomicInteger wonMatches) {

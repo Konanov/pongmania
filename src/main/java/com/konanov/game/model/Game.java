@@ -2,7 +2,7 @@ package com.konanov.game.model;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
-import java.time.ZonedDateTime;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -31,7 +31,7 @@ public class Game {
   private Boolean approved;
   private String gameDate;
   private String gameTime;
-  private ZonedDateTime createdAt;
+  private LocalDateTime createdAt;
 
   @Getter
   private enum Type {

@@ -1,6 +1,6 @@
 package com.konanov.game.endpoint;
 
-import static java.time.ZonedDateTime.now;
+import static java.time.LocalDateTime.now;
 
 import com.konanov.game.model.Game;
 import com.konanov.game.model.Match;
