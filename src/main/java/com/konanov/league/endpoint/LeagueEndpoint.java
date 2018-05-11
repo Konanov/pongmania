@@ -1,6 +1,7 @@
 package com.konanov.league.endpoint;
 
 import com.konanov.exceptions.PongManiaException;
+import com.konanov.league.model.PrivateLeague;
 import com.konanov.league.model.PublicLeague;
 import com.konanov.league.model.PublicLeagueType;
 import com.konanov.league.service.LeagueService;
@@ -8,13 +9,12 @@ import com.konanov.player.model.Player;
 import com.konanov.player.service.PlayerService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
-import java.util.Optional;
+import static java.lang.String.format;
 
 @Slf4j
 @RestController
@@ -28,15 +28,51 @@ public class LeagueEndpoint {
     @PostMapping(path = "league/{type}/assign")
     public Mono<PublicLeague> assignPublicLeague(@PathVariable String type,
                                                  @RequestBody Player.Credentials credentials) {
-        return PublicLeagueType.leagueByName(type).flatMap(name -> {
-            Mono<Player> player = playerService.findByEmail(credentials.getEmail());
-            Mono<PublicLeague> league = leagueService.findByType(name);
-            return Mono.zip(player, league, (p, l) -> {
-                p.setPublicLeague(l);
-                return p;
-            }).flatMap(playerService::insert)
-                    .map(Player::getPublicLeague)
-                    .doOnError((e) -> new PongManiaException(String.format(LEAGUE_NOT_ASSIGNED, e.getMessage())));
-        }).switchIfEmpty(Mono.empty());
+        return PublicLeagueType
+                .leagueByName(type)
+                .flatMap(name -> findLeague(credentials, name))
+                .switchIfEmpty(Mono.empty());
+    }
+
+    private Mono<PublicLeague> findLeague(@RequestBody Player.Credentials credentials, PublicLeagueType name) {
+        Mono<PublicLeague> leagueMono = leagueService.findByType(name);
+        Mono<Player> playerMono = playerService.findByEmail(credentials.getEmail());
+        return Mono.zip(playerMono, leagueMono, Player::setPublicLeague)
+                   .flatMap(playerService::insert)
+                   .map(Player::getPublicLeague)
+                   .doOnError((e) -> new PongManiaException(format(LEAGUE_NOT_ASSIGNED, e.getMessage())));
+    }
+
+    @PostMapping(path = "league/private/{name}")
+    public Mono<PrivateLeague> createPrivateLeague(@PathVariable String name) {
+        return leagueService.createPrivateLeague(name);
+    }
+
+    @PostMapping(path = "league/private/{name}/add")
+    public Mono<ResponseEntity> addPlayer(@PathVariable String name, @RequestBody Player.Credentials credentials) {
+        //FIXME: add error handling
+        return leagueService
+                .findPrivateLeagueByName(name)
+                .flatMap(league -> {
+                    league
+                            .getPlayers()
+                            .add(credentials);
+                    return leagueService.saveLeague(league);
+                })
+                .map((league) -> new ResponseEntity(HttpStatus.OK));
+    }
+
+    @PostMapping(path = "league/private/{name}/remove")
+    public Mono<ResponseEntity> removePlayer(@PathVariable String name, @RequestBody Player.Credentials credentials) {
+        //FIXME: add error handling
+        return leagueService
+                .findPrivateLeagueByName(name)
+                .flatMap(league -> {
+                    league
+                            .getPlayers()
+                            .remove(credentials);
+                    return leagueService.saveLeague(league);
+                })
+                .map((league) -> new ResponseEntity(HttpStatus.OK));
     }
 }

@@ -1,5 +1,7 @@
 package com.konanov.league.service;
 
+import com.konanov.league.model.PrivateLeague;
+import com.konanov.league.repository.PrivateLeagueRepository;
 import com.konanov.league.repository.PublicLeagueRepository;
 import com.konanov.league.model.PublicLeague;
 import com.konanov.league.model.PublicLeagueType;
@@ -18,6 +20,7 @@ public class LeagueService {
 
     private final PlayerRepository playerRepository;
     private final PublicLeagueRepository leagueRepository;
+    private final PrivateLeagueRepository privateLeagueRepository;
 
     public Flux<Player> playersFromLeague(String email) {
         return playerRepository.findByCredentials_Email(email)
@@ -43,5 +46,17 @@ public class LeagueService {
 
     public Mono<PublicLeague> findByType(PublicLeagueType type) {
         return leagueRepository.findByType(type);
+    }
+
+    public Mono<PrivateLeague> createPrivateLeague(String name) {
+        return privateLeagueRepository.insert(new PrivateLeague(name));
+    }
+
+    public Mono<PrivateLeague> findPrivateLeagueByName(String name) {
+        return privateLeagueRepository.findByName(name);
+    }
+
+    public Mono<PrivateLeague> saveLeague(PrivateLeague league) {
+        return privateLeagueRepository.save(league);
     }
 }
