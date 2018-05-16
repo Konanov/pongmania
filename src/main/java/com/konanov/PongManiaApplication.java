@@ -1,6 +1,9 @@
 package com.konanov;
 
+import com.konanov.league.model.PublicLeague;
+import com.konanov.league.model.PublicLeagueType;
 import com.konanov.league.repository.PublicLeagueRepository;
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -20,12 +23,12 @@ public class PongManiaApplication {
 	@Bean
 	CommandLineRunner preLoadMongo() {
 		return args -> {
-			/*leagueRepository.insert(new PublicLeague(new ObjectId(), PublicLeagueType.JUNIOR))
+			leagueRepository.insert(new PublicLeague(new ObjectId(), PublicLeagueType.JUNIOR))
 					.doOnNext(league -> System.out.println(league.getType() + " league created")).block();
 			leagueRepository.insert(new PublicLeague(new ObjectId(), PublicLeagueType.MIDDLE))
 					.doOnNext(league -> System.out.println(league.getType() + " league created")).block();
 			leagueRepository.insert(new PublicLeague(new ObjectId(), PublicLeagueType.PRO))
-					.doOnNext(league -> System.out.println(league.getType() + " league created")).block();*/
+					.doOnNext(league -> System.out.println(league.getType() + " league created")).block();
 		};
 	}
 
