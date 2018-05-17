@@ -3,7 +3,7 @@ package com.konanov.player.model;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.konanov.game.model.Game;
-import com.konanov.league.model.League;
+import com.konanov.league.model.PrivateLeague;
 import com.konanov.league.model.PublicLeague;
 import com.konanov.rating.model.Rating;
 import java.math.BigDecimal;
@@ -41,7 +41,7 @@ public class Player implements UserDetails {
     private BigDecimal matchWinRatio;
     private Long playedGamesCount;
     private Long plannedGamesCount;
-    private Collection<League> privateLeagues;
+    private Collection<PrivateLeague> privateLeagues;
     private Collection<GrantedAuthority> authorities;
 
     public Player(ObjectId id, Credentials credentials, String[] authorities) {
