@@ -112,4 +112,9 @@ public class GameService {
   public Flux<Game> findAllPlayerGames(ObjectId id) {
     return gameRepository.findByHostId(id).concatWith(gameRepository.findByGuestId(id));
   }
+
+    public Flux<Game> findPlayerPlannedGames(ObjectId id) {
+        return gameRepository.findByHostId(id).concatWith(gameRepository.findByGuestId(id))
+                .filter(game -> !game.getApproved());
+    }
 }

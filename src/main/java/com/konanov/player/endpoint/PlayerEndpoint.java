@@ -5,44 +5,57 @@ import com.konanov.league.model.PublicLeague;
 import com.konanov.league.model.PublicLeagueType;
 import com.konanov.player.model.Player;
 import com.konanov.player.service.PlayerService;
-import java.util.ArrayList;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.bson.types.ObjectId;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.ArrayList;
+
+import static com.konanov.player.endpoint.PlayerEndpoint.PLAYER_URL;
+
 @Slf4j
 @RestController
+@RequestMapping(PLAYER_URL)
 @RequiredArgsConstructor
 public class PlayerEndpoint {
+
+  static final String PLAYER_URL = "/player";
 
   private final PlayerService playerService;
   private final GameService gameService;
 
-  @GetMapping(path = "player/all")
+  @GetMapping(path = "/all")
   public Flux<Player> retrieveAll() {
     return playerService.retrieveAll();
   }
 
-  @GetMapping(path = "player/{email}/has/league")
+  @GetMapping(path = "/{email}/has/league")
   public Mono<Boolean> playerHasLeague(@PathVariable String email) {
     return playerService.playerHasLeague(email);
   }
 
-  @GetMapping(path = "player/{email}/public/league")
+  @GetMapping(path = "/{email}/public/league")
   public Mono<PublicLeague> playersPublicLeague(@PathVariable String email) {
     return playerService.playersPublicLeague(email);
   }
 
-  @GetMapping(path = "players/{email}")
-  public Mono<Player> getPlayer(@PathVariable String email) {
+  @GetMapping(path = "/{email}")
+  public Mono<Player> getPlayerByEmail(@PathVariable String email) {
     return playerService.findByEmail(email);
   }
 
-  @GetMapping(path = "players/of/{name}/league")
+  @GetMapping(path = "/{id}")
+  public Mono<Player> getPlayerById(@PathVariable String id) {
+    return playerService.findById(new ObjectId(id));
+  }
+
+  @GetMapping(path = "/of/{name}/league")
   public Flux<Player> playersOfLeague(@PathVariable String name) {
     return PublicLeagueType
         .leagueByName(name)

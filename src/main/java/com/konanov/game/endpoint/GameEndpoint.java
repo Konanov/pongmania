@@ -83,6 +83,11 @@ public class GameEndpoint {
     return gameService.findAllPlayerGames(new ObjectId(uuid));
   }
 
+  @GetMapping("/game/{uuid}/planned")
+  public Flux<Game> getUserPlannedGames(@PathVariable String uuid) {
+    return gameService.findPlayerPlannedGames(new ObjectId(uuid));
+  }
+
   private Game addMatch(@RequestBody Match match, Game it) {
     it.getMatches().add(match);
     return it;
