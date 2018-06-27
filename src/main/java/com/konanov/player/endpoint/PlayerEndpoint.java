@@ -45,12 +45,12 @@ public class PlayerEndpoint {
     return playerService.playersPublicLeague(email);
   }
 
-  @GetMapping(path = "/{email}")
+  @GetMapping(path = "/byEmail/{email}")
   public Mono<Player> getPlayerByEmail(@PathVariable String email) {
     return playerService.findByEmail(email);
   }
 
-  @GetMapping(path = "/{id}")
+  @GetMapping(path = "/byId/{id}")
   public Mono<Player> getPlayerById(@PathVariable String id) {
     return playerService.findById(new ObjectId(id));
   }
