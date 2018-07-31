@@ -1,7 +1,5 @@
 package com.konanov.game.endpoint;
 
-import static java.time.LocalDateTime.now;
-
 import com.konanov.game.model.Game;
 import com.konanov.game.model.Match;
 import com.konanov.game.repository.GameRepository;
@@ -11,7 +9,6 @@ import com.konanov.rating.model.Rating;
 import com.konanov.rating.service.RatingCalculationService;
 import com.konanov.statistics.model.Statistic;
 import com.konanov.statistics.service.StatisticsCalculatingService;
-import java.util.ArrayList;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.types.ObjectId;
@@ -23,6 +20,8 @@ import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
+
+import java.util.ArrayList;
 
 @Slf4j
 @RestController
@@ -43,16 +42,7 @@ public class GameEndpoint {
    */
   @PostMapping("/game/offer")
   public Mono<Game> offerGame(@RequestBody Game game) {
-    playerService.findByEmail(game.getHostEmail())
-        .cache()
-        .repeat()
-        .subscribe(it -> game.setHostId(it.getId()));
-    playerService.findByEmail(game.getGuestEmail())
-        .cache()
-        .repeat()
-        .subscribe(it -> game.setGuestId(it.getId()));
-    game.setCreatedAt(now());
-    return gameRepository.insert(game);
+    return gameService.offerGame(game);
   }
 
   /**

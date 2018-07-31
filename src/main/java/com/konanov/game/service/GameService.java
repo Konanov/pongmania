@@ -8,17 +8,22 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import com.konanov.player.service.PlayerService;
 import lombok.RequiredArgsConstructor;
 import org.bson.types.ObjectId;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import static java.time.LocalDateTime.now;
+
 @Service
 @RequiredArgsConstructor
 public class GameService {
 
   private final GameRepository gameRepository;
+  private final PlayerService playerService;
 
   /**
    * Counts not approved games player has planned.
@@ -113,8 +118,22 @@ public class GameService {
     return gameRepository.findByHostId(id).concatWith(gameRepository.findByGuestId(id));
   }
 
-    public Flux<Game> findPlayerPlannedGames(ObjectId id) {
+  public Flux<Game> findPlayerPlannedGames(ObjectId id) {
         return gameRepository.findByHostId(id).concatWith(gameRepository.findByGuestId(id))
                 .filter(game -> !game.getApproved());
+  }
+
+    public Mono<Game> offerGame(Game game) {
+        playerService.findByEmail(game.getHostEmail())
+                .cache()
+                .repeat()
+                .subscribe(it -> game.setHostId(it.getId()));
+        playerService.findByEmail(game.getGuestEmail())
+                .cache()
+                .repeat()
+                .subscribe(it -> game.setGuestId(it.getId()));
+        game.setCreatedAt(now());
+        game.setGameDate(game.getGameDate());
+        return gameRepository.insert(game);
     }
 }
